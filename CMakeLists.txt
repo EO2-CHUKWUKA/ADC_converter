@@ -9,4 +9,6 @@ add_executable(ADC_ANALYSER main.cpp
         stats.c
         stats.h
         adc.c
+        adc.h
+        adc.h
         adc.h)
