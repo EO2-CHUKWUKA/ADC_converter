@@ -3,7 +3,7 @@ project(ADC_ANALYSER)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ADC_ANALYSER main.cpp
+add_executable(ADC_ANALYSER main.c
         IO.c
         io.h
         stats.c

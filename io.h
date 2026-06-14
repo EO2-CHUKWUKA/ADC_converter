@@ -8,14 +8,11 @@
 #include <stdio.h>
 #include "adc.h"
 
-FILE *openBinaryFile(
-        const char *adc_sensor_log.bin);
-int readHeader(
-        FILE *fp,
+FILE *openBinaryFile(const char *adc_sensor_log.bin);
+int readHeader(FILE *fp,
         ADCHeader *header);
 
-int loadRecords(
-        FILE *fp,
+int loadRecords(FILE *fp,
         ADCSample *samples,
         uint32_t count);
 
