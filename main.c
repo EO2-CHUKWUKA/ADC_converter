@@ -10,12 +10,14 @@ int main(void)
 
     ADCHeader header;
 
-    fp = openBinaryFile("adc_sensor_log.bin");
+       printf("Opening: ../adc_sensor_log.bin\n");
+       fp = openBinaryFile("../adc_sensor_log.bin");
 
     if(fp == NULL)
     {
         return 1;
     }
+
 
     if(!readHeader(fp, &header))
     {
