@@ -1,20 +1,47 @@
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 
-// TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+#include "adc.h"
+#include "io.h"
 
-int main() {
-    // TIP Press <shortcut actionId="RenameElement"/> when your caret is at the <b>lang</b> variable name to see how CLion can help you rename it.
+int main(void)
+{
+    FILE *fp;
 
-    const auto lang = "C++";
-    std::cout << "Hello and welcome to " << lang << "!\n";
+    ADCHeader header;
 
-    for (int i = 1; i <= 5; i++) {
-        // TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-        std::cout << "i = " << i << std::endl;
+    fp = openBinaryFile("adc_sensor_log.bin");
+
+    if(fp == NULL)
+    {
+        return 1;
     }
 
-    return 0;
-    // TIP See CLion help at <a href="https://www.jetbrains.com/help/clion/">jetbrains.com/help/clion/</a>. Also, you can try interactive lessons for CLion by selecting 'Help | Learn IDE Features' from the main menu.
-}
+    if(!readHeader(fp, &header))
+    {
+        printf("Header read failed\n");
 
-// hello you new char
+        fclose(fp);
+
+        return 1;
+    }
+
+    printf("Magic Number : 0x%X\n",
+           header.magic);
+
+    printf("Version      : %u\n",
+           header.version);
+
+    printf("Channels     : %u\n",
+           header.channel_count);
+
+    printf("Records      : %u\n",
+           header.record_count);
+
+    printf("Sample Rate  : %u Hz\n",
+           header.sample_rate);
+
+    fclose(fp);
+
+    return 0;
+}

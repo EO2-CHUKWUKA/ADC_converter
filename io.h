@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "adc.h"
 
-FILE *openBinaryFile(const char *adc_sensor_log.bin);
+FILE *openBinaryFile(const char *filename);
 int readHeader(FILE *fp,
         ADCHeader *header);
 

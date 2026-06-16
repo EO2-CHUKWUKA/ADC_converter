@@ -18,7 +18,7 @@ typedef struct __attribute__ ((packed))
     uint32_t record_count;
     uint32_t sample_rate;
     uint8_t reserved[8];
-} ADC_ANALYSER_ADC_H;
+} ADCHeader;
 typedef struct __attribute__((packed))
 {
     float timestamp;
