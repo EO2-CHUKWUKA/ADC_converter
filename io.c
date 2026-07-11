@@ -38,6 +38,9 @@ int loadRecords(FILE *fp,
                  1,
                  fp) != 1)
         {
+            printf("Read failed at record %u\n",
+            i);
+
             return 0;
         }
 

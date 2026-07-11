@@ -9,7 +9,7 @@ float calculateMean(
         float values[],
         int count)
 {
-    float sum = 0;
+    float sum = 0.0f;
 
     for(int i = 0;
         i < count;
@@ -55,4 +55,29 @@ float calculateMax(
     }
 
     return max;
+}
+float calculateStdDev(
+        float values[],
+        int count)
+{
+    float mean;
+    float sumSquares = 0.0f;
+
+    mean = calculateMean(values,
+                         count);
+
+    for(int i = 0;
+        i < count;
+        i++)
+    {
+        float difference;
+
+        difference = values[i] - mean;
+
+        sumSquares += difference *
+                      difference;
+    }
+
+    return sqrt(sumSquares /
+                count);
 }

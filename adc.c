@@ -3,6 +3,19 @@
 //
 
 #include "adc.h"
+void convertVoltagesArray(
+        ADCSample *samples,
+        uint32_t count)
+{
+    for(uint32_t i = 0;
+        i < count;
+        i++)
+    {
+        samples[i].voltage =
+                (samples[i].raw_value / 4095.0f)
+                * VREF;
+    }
+}
 void convertVoltages(
         ADCSample *samples,
         uint32_t count)
