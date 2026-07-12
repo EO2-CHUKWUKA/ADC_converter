@@ -1,9 +1,9 @@
-//
-// Created by EO2-CHUKWUKA on 12/06/2026.
-//
-
 #ifndef ADC_ANALYSER_STATS_H
 #define ADC_ANALYSER_STATS_H
+
+#include "adc.h"
+
+
 
 float calculateMean(
         float values[],
@@ -21,4 +21,12 @@ float calculateStdDev(
         float values[],
         int count);
 
-#endif //ADC_ANALYSER_STATS_H
+
+
+void calculateChannelStatistics(
+        ADCSample *samples,
+        uint32_t recordCount,
+        uint16_t channelCount,
+        ChannelStats stats[]);
+
+#endif
