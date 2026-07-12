@@ -5,169 +5,101 @@
 #include "io.h"
 #include "stats.h"
 
-int main(void)
+
+int main(int argc, char *argv[])
 {
-    FILE *fp;
-
-    ADCHeader header;
-    ADCSample *samples;
-
-
-    // Open binary file
-    fp = openBinaryFile("../adc_sensor_log.bin");
-
-    if(fp == NULL)
+    if (argc != 2)
     {
-        printf("File opening failed\n");
+        printf("Usage: %s <adc_sensor_log.bin>\n", argv[0]);
         return 1;
     }
 
+    FILE *fp;
+    ADCHeader header;
+    ADCSample *samples;
+    fp = openBinaryFile(argv[1]);
 
-    // Read header
-    if(!readHeader(fp, &header))
+    if (fp == NULL)
     {
-        printf("Header read failed\n");
+        return 1;
+    }
+
+    if (!readHeader(fp, &header))
+    {
         fclose(fp);
         return 1;
     }
 
-
-    // Display header information
     printf("Magic Number: 0x%X\n", header.magic);
     printf("Version: %d\n", header.version);
     printf("Channels: %d\n", header.channel_count);
     printf("Records: %d\n", header.record_count);
     printf("Sample Rate: %d Hz\n\n", header.sample_rate);
 
-
-    fseek(fp, 0, SEEK_END);
-
-    long fileSize = ftell(fp);
-
-    printf("File size: %ld bytes\n", fileSize);
-
-    printf("Header size: %lu bytes\n", sizeof(ADCHeader));
-
-    printf("Sample size: %lu bytes\n", sizeof(ADCSample));
-
-    printf("Expected data size: %lu bytes\n",
-           sizeof(ADCHeader) + (header.record_count * sizeof(ADCSample)));
-
-
-    // Return file pointer to start of records
-    fseek(fp, sizeof(ADCHeader), SEEK_SET);
-
-    // Allocate memory for samples
     samples = malloc(header.record_count * sizeof(ADCSample));
 
-
-    if(samples == NULL)
+    if (samples == NULL)
     {
         printf("Memory allocation failed\n");
         fclose(fp);
         return 1;
     }
 
-
-
-    // Load ADC records
-    if(!loadRecords(fp, samples, header.record_count))
+    if (!loadRecords(fp, samples, header.record_count))
     {
-        printf("Record loading failed\n");
-
         free(samples);
         fclose(fp);
-
         return 1;
     }
 
-
     fclose(fp);
 
+    convertToVoltage(samples, header.record_count);
 
+    ChannelStats channelStats[NUM_CHANNELS];
 
-    // Convert raw ADC values to voltage
-    for(unsigned int i = 0; i < header.record_count; i++)
+    for (unsigned int channel = 0; channel < header.channel_count; channel++)
     {
-        samples[i].voltage =
-        (samples[i].raw_value / 4095.0f) * VREF;
-    }
+        computeChannelStats(samples, header.record_count, channel, &channelStats[channel]);
 
-
-
-    // Analyse each channel
-    for(unsigned int channel = 0; channel < header.channel_count; channel++)
-    {
-        printf("\nChannel %d\n", channel);
+        printf("\nChannel %u\n", channel);
         printf("----------------\n");
 
-
-        float sum = 0;
-        float min = 100;
-        float max = 0;
-
-        int overVoltage = 0;
-        int underVoltage = 0;
-
-
-        int count = 0;
-
-
-        for(unsigned int i = 0; i < header.record_count; i++)
+        if (channelStats[channel].count > 0)
         {
+            printf("Mean Voltage: %.3f V\n", channelStats[channel].mean_voltage);
+            printf("Minimum Voltage: %.3f V\n", channelStats[channel].min_voltage);
+            printf("Maximum Voltage: %.3f V\n", channelStats[channel].max_voltage);
+            printf("Std Deviation: %.3f V\n", channelStats[channel].stddev_voltage);
 
-            if(samples[i].channel_id == channel)
-            {
-
-                float voltage = samples[i].voltage;
-
-
-                sum += voltage;
-
-
-                if(voltage < min)
-                    min = voltage;
-
-
-                if(voltage > max)
-                    max = voltage;
-
-
-
-                if(voltage > 3.0f)
-                    overVoltage++;
-
-
-                if(voltage < 0.3f)
-                    underVoltage++;
-
-
-                count++;
-            }
-        }
-
-
-
-        if(count > 0)
-        {
-            printf("Mean Voltage: %.3f V\n", sum / count);
-            printf("Minimum Voltage: %.3f V\n", min);
-            printf("Maximum Voltage: %.3f V\n", max);
-
-            printf("Overvoltage faults: %d\n", overVoltage);
-            printf("Undervoltage faults: %d\n", underVoltage);
+            printf("Overvoltage faults: %u\n", channelStats[channel].overvoltage_count);
+            printf("Undervoltage faults: %u\n", channelStats[channel].undervoltage_count);
+            printf("Sensor fault flags: %u\n", channelStats[channel].sensor_fault_count);
+            printf("Out-of-range flags: %u\n", channelStats[channel].out_of_range_count);
         }
         else
         {
             printf("No samples found\n");
         }
-
     }
 
+    SequenceGap *gaps = NULL;
+    unsigned int gapCount = checkSequenceIntegrity(samples, header.record_count, &gaps);
+    printf("\nSequence integrity: %u gap(s) found\n", gapCount);
 
+    if (!writeResults("results.txt", channelStats, header.channel_count,
+                       gaps, gapCount, header.record_count))
+    {
+        printf("Failed to write results.txt\n");
+        free(gaps);
+        free(samples);
+        return 1;
+    }
 
+    printf("Results written to results.txt\n");
+
+    free(gaps);
     free(samples);
-
 
     return 0;
 }

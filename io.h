@@ -15,5 +15,7 @@ int readHeader(FILE *fp,
 int loadRecords(FILE *fp,
         ADCSample *samples,
         uint32_t count);
+int writeResults(const char* filename, const ChannelStats stats[],uint32_t channel_count, uint32_t total_records,
+                  int gap_count);
 
 #endif //ADC_ANALYSER_IO_H
