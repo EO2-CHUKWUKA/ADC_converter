@@ -1,3 +1,5 @@
+//
+// Created by ASUS on 12/06/2026
 #include <stdlib.h>
 #include "adc.h"
 #include "stats.h"
@@ -90,6 +92,7 @@ void computeChannelStats(const ADCSample *samples, unsigned int count,
         if (isSensorFault(p))  stats->sensor_fault_count++;
         if (isOutOfRange(p))   stats->out_of_range_count++;
     }
+
 
     stats->mean_voltage   = calculateMean(voltages, (int)channel_count);
     stats->min_voltage    = calculateMin(voltages, (int)channel_count);

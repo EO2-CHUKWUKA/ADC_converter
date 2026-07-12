@@ -1,5 +1,5 @@
-#ifndef ADC_ANALYSER_STATS_H
-#define ADC_ANALYSER_STATS_H
+#ifndef STATS_H
+#define STATS_H
 
 #include "adc.h"
 
@@ -23,10 +23,6 @@ float calculateStdDev(
 
 
 
-void calculateChannelStatistics(
-        ADCSample *samples,
-        uint32_t recordCount,
-        uint16_t channelCount,
-        ChannelStats stats[]);
+float calculateStdDev(float values[], int count);
 
 #endif

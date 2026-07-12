@@ -1,7 +1,6 @@
 //
 // Created by ASUS on 12/06/2026.
 //
-
 #include <math.h>
 #include "stats.h"
 
@@ -20,6 +19,7 @@ float calculateMean(
 
     return sum / count;
 }
+
 float calculateMin(
         float values[],
         int count)
@@ -38,6 +38,7 @@ float calculateMin(
 
     return min;
 }
+
 float calculateMax(
         float values[],
         int count)
@@ -56,6 +57,7 @@ float calculateMax(
 
     return max;
 }
+
 float calculateStdDev(
         float values[],
         int count)
@@ -78,6 +80,7 @@ float calculateStdDev(
                       difference;
     }
 
-    return sqrt(sumSquares /
+
+    return sqrtf(sumSquares /
                 count);
 }
