@@ -3,9 +3,7 @@
 
 FILE *openBinaryFile(const char *filename)
 {
-    FILE *fp = fopen(filename, "rb"); /* "rb": binary mode, so no
-                                          newline translation corrupts
-                                          the raw bytes */
+    FILE *fp = fopen(filename, "rb");
     if (fp == NULL)
     {
         printf("File opening failed: '%s'\n", filename);
@@ -55,21 +53,6 @@ int readHeader(FILE *fp, ADCHeader *header)
     return 1;
 }
 
-/* ------------------------------------------------------------------
- * RawRecord: EXACT 16-byte on-disk layout of one record, kept private
- * to io.c (not in io.h) because nothing outside this file needs to
- * know about it. It exists purely so fread() has something whose
- * memory layout matches the file exactly, field for field, in the
- * same order the file has them.
- *
- * ADCSample (adc.h) is NOT used directly for fread() because it has
- * an extra 'voltage' field the file doesn't contain -- if fread()
- * wrote straight into an ADCSample-shaped buffer, 'voltage' sitting
- * in the middle of the struct would shift every field after it out
- * of alignment with the file, and they'd all come out as garbage.
- * So: fread() into RawRecord here, then copy field-by-field into the
- * ADCSample the rest of the program uses.
- * ------------------------------------------------------------------ */
 typedef struct __attribute__((packed))
 {
     float    timestamp;
@@ -83,7 +66,7 @@ typedef struct __attribute__((packed))
 
 int loadRecords(FILE *fp, ADCSample *samples, unsigned int record_count)
 {
-    RawRecord raw; /* one 16-byte on-disk record at a time */
+    RawRecord raw;
 
     for (unsigned int i = 0; i < record_count; i++)
     {
@@ -96,14 +79,11 @@ int loadRecords(FILE *fp, ADCSample *samples, unsigned int record_count)
             return 0;
         }
 
-        ADCSample *dst = samples + i; /* pointer arithmetic instead of
-                                          samples[i] */
+        ADCSample *dst = samples + i;
         dst->timestamp        = raw.timestamp;
         dst->channel_id       = raw.channel_id;
         dst->raw_value        = raw.raw_value;
-        dst->voltage          = 0.0f; /* filled in later by
-                                          convertToVoltage() in adc.c --
-                                          io.c only does I/O */
+        dst->voltage          = 0.0f;
         dst->temperature      = raw.temperature;
         dst->status_flags     = raw.status_flags;
         dst->sequence_number  = raw.sequence_number;
@@ -117,8 +97,7 @@ int writeResults(const char *filename,
                   const SequenceGap *gaps, unsigned int gap_count,
                   unsigned int total_records)
 {
-    FILE *fp = fopen(filename, "w"); /* text mode: results.txt is a
-                                         human-readable report */
+    FILE *fp = fopen(filename, "w");
     if (fp == NULL)
     {
         printf("Could not open '%s' for writing\n", filename);

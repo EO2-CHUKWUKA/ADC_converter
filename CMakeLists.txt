@@ -4,11 +4,12 @@ project(ADC_ANALYSER)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(ADC_ANALYSER main.c
-        IO.c
+        main.c
+        io.c
         io.h
         stats.c
         stats.h
         adc.c
         adc.h
-        adc.h
-        adc.h)
+
+)

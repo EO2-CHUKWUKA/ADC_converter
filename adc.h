@@ -1,88 +1,68 @@
-//
-// Created by EO2-Chukwuka on 12/06/2026.
-//
-
-#ifndef ADC_ANALYSER_ADC_H
-#define ADC_ANALYSER_ADC_H
+#ifndef ADC_H
+#define ADC_H
 
 #include <stdint.h>
 
-#define ADC_MAGIC 0xADC1BEEF
-#define VREF 3.3f
+#define VREF                3.3f     /* reference voltage, volts   */
+#define MAX_RAW             4095.0f
+#define NUM_CHANNELS        4
 
-/*==========================
- Header Structure
-==========================*/
+#define OVERVOLTAGE_LIMIT   3.0f
+#define UNDERVOLTAGE_LIMIT  0.3f
 
-typedef struct __attribute__((packed))
-{
-    uint32_t magic;
-    uint16_t version;
-    uint16_t channel_count;
-    uint32_t record_count;
-    uint32_t sample_rate;
-    uint8_t reserved[8];
+#define STATUS_FAULT_BIT    0x01u    /* bit 0: sensor fault        */
+#define STATUS_OOR_BIT      0x02u    /* bit 1: out-of-range        */
 
-} ADCHeader;
-
-/*==========================
- ADC Sample Structure
-==========================*/
-
-typedef struct __attribute__((packed))
-{
-    float timestamp;
-    uint8_t channel_id;
-    uint16_t raw_value;
-    int16_t temperature;
-    uint8_t status_flags;
-    uint32_t sequence_number;
-    uint8_t reserved[2];
-
-    /* Calculated later by the program */
-    float voltage;
-
-} ADCSample;
-
-/*==========================
- Statistics Structure
-==========================*/
 
 typedef struct
 {
-    float mean;
-    float min;
-    float max;
-    float stddev;
+    float          timestamp;
+    unsigned char  channel_id;
+    unsigned short raw_value;
+    float          voltage;
+    short          temperature;
+    unsigned char  status_flags;
+    unsigned int   sequence_number;
+} ADCSample;
 
-    int over_voltage;
-    int under_voltage;
-    int sensor_fault;
+typedef struct
+{
+    unsigned int channel_id;
+    unsigned int count;
 
+    float mean_voltage;
+    float min_voltage;
+    float max_voltage;
+    float stddev_voltage;
+
+    unsigned int overvoltage_count;
+    unsigned int undervoltage_count;
+    unsigned int sensor_fault_count;
+    unsigned int out_of_range_count;
 } ChannelStats;
 
-/*==========================
- Function Prototypes
-==========================*/
+typedef struct
+{
+    unsigned int record_index;
+    unsigned int expected_sequence;
+    unsigned int found_sequence;
+} SequenceGap;
 
-/* Stage 3 */
-void convertVoltages(
-        ADCSample *samples,
-        uint32_t count);
 
-void convertVoltagesPointer(
-        ADCSample *samples,
-        uint32_t count);
+void convertToVoltage(ADCSample *samples, unsigned int count);
 
-/* Stage 7 */
-void detectFaults(
-        ADCSample *samples,
-        uint32_t count,
-        ChannelStats stats[]);
 
-/* Stage 8 */
-int checkSequence(
-        ADCSample *samples,
-        uint32_t count);
+int isOverVoltage(const ADCSample *sample);
+int isUnderVoltage(const ADCSample *sample);
+int isSensorFault(const ADCSample *sample);
+int isOutOfRange(const ADCSample *sample);
+
+
+void computeChannelStats(const ADCSample *samples, unsigned int count,
+                          unsigned int channel_id, ChannelStats *stats);
+
+
+unsigned int checkSequenceIntegrity(const ADCSample *samples, unsigned int count,
+                                     SequenceGap **gaps);
 
 #endif
